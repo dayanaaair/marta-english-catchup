@@ -66,7 +66,21 @@ export default function Home() {
       <section className="theory-card"><div className="theory-icon"><BookOpen size={22}/></div><div><p className="stage-label">Этап 2 · Осмысление правила</p><h2>{lesson.theoryTitle}</h2><div className="theory-grid">{lesson.theory.map((item)=><div key={item.rule}><strong>{item.rule}</strong><span>{item.example}</span></div>)}</div></div></section>
       <div className="exercise-heading"><div><p className="eyebrow">Контролируемая практика</p><h2>Собираем форму правильно</h2></div><span>4 задания</span></div>{renderQuestions(lesson.questions.slice(2,6))}
       <section className="coach-card"><p className="stage-label">Остановитесь и проверьте правило</p><div className="coach-grid">{lesson.midTheory.map((item)=><div key={item.title}><h3>{item.title}</h3><p>{item.text}</p><code>{item.example}</code></div>)}</div></section>
-      <div className="exercise-heading"><div><p className="eyebrow">Перенос в ситуацию</p><h2>Выбираем язык по смыслу</h2></div><span>{lesson.questions.length-6} заданий</span></div>{renderQuestions(lesson.questions.slice(6))}
+      {lesson.id === "practical" ? <>
+        <div className="exercise-heading"><div><p className="eyebrow">Перенос в ситуацию</p><h2>Язык в магазине и в общении</h2></div><span>2 задания</span></div>
+        {renderQuestions(lesson.questions.slice(6,8))}
+        <section className="coach-card"><p className="stage-label">Итоговое повторение · Перед финальной проверкой</p><div className="coach-grid">
+          <div><h3>Частотность</h3><p>С обычным глаголом наречие ставим перед ним, а с be — после него.</p><code>I often walk. · I am often tired.</code></div>
+          <div><h3>Can / can’t</h3><p>После can используем начальную форму глагола. Can I…? помогает спросить разрешение.</p><code>Can I pay by card?</code></div>
+          <div><h3>Действие сейчас</h3><p>Для действия в момент речи нужны am/is/are и форма с -ing.</p><code>The assistant is helping a customer now.</code></div>
+          <div><h3>Обычно и сегодня</h3><p>Привычка — Present Simple; временная ситуация сейчас — Present Continuous.</p><code>I usually wear jeans, but today I’m wearing a skirt.</code></div>
+        </div></section>
+        <div className="exercise-heading"><div><p className="eyebrow">Финальная проверка</p><h2>Соединяем темы курса</h2></div><span>4 задания</span></div>
+        {renderQuestions(lesson.questions.slice(8))}
+      </> : <>
+        <div className="exercise-heading"><div><p className="eyebrow">Перенос в ситуацию</p><h2>Выбираем язык по смыслу</h2></div><span>{lesson.questions.length-6} заданий</span></div>
+        {renderQuestions(lesson.questions.slice(6))}
+      </>}
       <section className="production-card"><div className="stage-icon"><PenLine size={22}/></div><div className="production-main"><p className="stage-label">Этап 4 · Продукция</p><h2>{lesson.production.prompt}</h2><p>{lesson.production.scaffold}</p><textarea value={production} disabled={checked} placeholder={lesson.production.placeholder} onChange={(e)=>setProduction(e.target.value)} rows={6}/><div className="auto-check"><strong>Автопроверка</strong>{lesson.production.checks.map((label,index)=><span className={prodChecks[index]?"passed":""} key={label}><i>{prodChecks[index]?<Check size={14}/>:index+1}</i>{label}</span>)}</div>{productionReady&&<details><summary>Показать пример после своей попытки</summary><p>{lesson.production.sample}</p></details>}</div></section>
       <section className={`result-card ${checked?"visible":""}`}>{!checked?<div className="submit-wrap"><small>{!allAnswered?"Ответьте на все задания":!productionReady?"Завершите итоговое задание":"Всё готово к проверке"}</small><Button size="lg" onClick={submitLesson} disabled={!allAnswered||!productionReady||saving}>Проверить урок <ChevronRight/></Button></div>:percent>=80?<><div><Sparkles/><span><strong>{percent}% — модуль пройден</strong><small>Теория, практика и продукция завершены.</small></span></div><Button size="lg" onClick={()=>activeIndex<lessons.length-1&&changeLesson(activeIndex+1)}>Следующий модуль <ChevronRight/></Button></>:<><div><RotateCcw/><span><strong>{percent}% — ещё немного практики</strong><small>Исправьте ошибки и попробуйте снова.</small></span></div><Button size="lg" onClick={retry}>Повторить ошибки</Button></>}</section>
     </section>
