@@ -3,6 +3,7 @@ import { env } from "cloudflare:workers";
 type Row = { module_id: string; best_score: number; attempts: number; completed: number; mistakes: string; updated_at: string };
 
 function validStudent(token: string | null) { return Boolean(token && token === env.STUDENT_TOKEN); }
+function validTeacher(token: string | null) { return Boolean(token && token === env.TEACHER_TOKEN); }
 async function readProgress() {
   const result = await env.DB.prepare("SELECT module_id, best_score, attempts, completed, mistakes, updated_at FROM course_progress WHERE student_id = ? ORDER BY id").bind("marta").all<Row>();
   return Object.fromEntries(result.results.map((row) => [row.module_id, { score: row.best_score, attempts: row.attempts, completed: Boolean(row.completed), mistakes: JSON.parse(row.mistakes), updatedAt: row.updated_at }]));
@@ -27,4 +28,12 @@ export async function POST(request: Request) {
     completed=MAX(completed,excluded.completed), mistakes=excluded.mistakes, updated_at=excluded.updated_at`)
     .bind("marta", body.moduleId, score, 1, score >= 80 ? 1 : 0, mistakes, now).run();
   return Response.json({ progress: await readProgress() });
+}
+
+export async function DELETE(request: Request) {
+  const body = await request.json() as { teacher?: string; studentId?: string };
+  if (!validTeacher(body.teacher || null)) return Response.json({ error: "invalid teacher key" }, { status: 401 });
+  const studentId = body.studentId || "marta";
+  await env.DB.prepare("DELETE FROM course_progress WHERE student_id = ?").bind(studentId).run();
+  return Response.json({ ok: true, studentId, progress: await readProgress() });
 }
